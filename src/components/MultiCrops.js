@@ -15,11 +15,11 @@ const isValidPoint = (point = {}) => {
 
 
 class MultiCrops extends Component {
-  drawingIndex = -1
+  drawingIndex = -1;
 
-  pointA = {}
+  pointA = {};
 
-  id = shortid.generate()
+  id = shortid.generate();
 
   renderCrops = (props) => {
     const indexedMap = addIndex(map)
@@ -31,20 +31,22 @@ class MultiCrops extends Component {
         coordinate={coor}
         {...props}
       />))(props.coordinates)
-  }
+  };
 
-  getCursorPosition = (e) => {
+  getCursorPosition = (e, type) => {
     const { left, top } = this.container.getBoundingClientRect()
+    const x = type === 'mouse' ? e.clientX : e.touches[0].pageX
+    const y = type === 'mouse' ? e.clientX : e.touches[0].pageY
     return {
-      x: e.clientX - left,
-      y: e.clientY - top,
+      x: x - left,
+      y: y - top,
     }
-  }
+  };
 
-  handleMouseDown = (e) => {
+  handleMouseDown = (e, type) => {
     const { coordinates } = this.props
     if (e.target === this.img || e.target === this.container) {
-      const { x, y } = this.getCursorPosition(e)
+      const { x, y } = this.getCursorPosition(e, type)
 
       this.drawingIndex = coordinates.length
       this.pointA = { x, y }
@@ -53,11 +55,11 @@ class MultiCrops extends Component {
   }
 
 
-  handleMouseMove = (e) => {
+  handleMouseMove = (e, type) => {
     const { onDraw, onChange, coordinates } = this.props
     const { pointA } = this
     if (isValidPoint(pointA)) {
-      const pointB = this.getCursorPosition(e)
+      const pointB = this.getCursorPosition(e, type)
 
       // get the drawing coordinate
       const coordinate = {
@@ -78,9 +80,9 @@ class MultiCrops extends Component {
     }
   }
 
-  handlMouseUp = () => {
+  handleMouseUp = () => {
     this.pointA = {}
-  }
+  };
 
   render() {
     const {
@@ -93,9 +95,12 @@ class MultiCrops extends Component {
           display: 'inline-block',
           position: 'relative',
         }}
-        onMouseDown={this.handleMouseDown}
-        onMouseMove={this.handleMouseMove}
-        onMouseUp={this.handlMouseUp}
+        onMouseDown={e => this.handleMouseDown(e, 'mouse')}
+        onMouseMove={e => this.handleMouseMove(e, 'mouse')}
+        onMouseUp={this.handleMouseUp}
+        onTouchStart={e => this.handleMouseDown(e, 'touch')}
+        onTouchMove={e => this.handleMouseMove(e, 'touch')}
+        onTouchEnd={this.handleMouseUp}
         ref={container => this.container = container}
       >
         <img
